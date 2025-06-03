@@ -1,0 +1,165 @@
+syntax = "proto3";
+
+// 定义 Protobuf 包，有助于避免命名冲突
+package demo;
+
+
+// 用户状态枚举
+enum UserStatus {
+  option note = "UserStatus";
+  // 必须有一个值为 0 的枚举成员作为默认值
+  USER_STATUS_UNKNOWN = 0 [note = "用户状态未知"];
+  USER_STATUS_ACTIVE = 1 [note = "用户状态活跃"];
+  USER_STATUS_INACTIVE = 2 [note = "用户状态不活跃"];
+  USER_STATUS_PENDING = 3 [note = "用户状态待定"];
+}
+
+// ====================================================================
+// 消息定义
+// ====================================================================
+
+// 1. 基本数据类型和重复字段
+message UserProfile {
+  option note = "UserProfileuserId";
+
+  // 必需字段：用户ID
+  int32 user_id = 1;
+  // 可选字段：用户名
+  string username = 2;
+  // 可选字段：电子邮件，标记为已废弃
+  string email = 3 [
+    deprecated = true,
+    note = "电子邮件已废弃，请使用新的联系方式"
+  ];
+  // 布尔类型：是否活跃
+  bool is_active = 4;
+  // 枚举类型：用户状态
+  UserStatus status = 5;
+  // 重复字段：电话号码列表
+  repeated string phone_numbers = 6;
+  // 双精度浮点数：用户评分
+  double user_rating = 7;
+  // 单精度浮点数：用户账户余额
+  float account_balance = 8;
+  // 字节类型：用户头像（例如，存储图片二进制数据）
+  bytes profile_picture = 9;
+  // 64位整型：创建时间戳
+  int64 created_at = 10;
+}
+
+// 嵌套消息：库存信息
+  message Inventory {
+    int32 stock_quantity = 1;
+    string location = 2;
+  }
+
+// 2. 嵌套消息
+message Product {
+  int32 product_id = 1;
+  string product_name = 2;
+  double price = 3;
+
+  
+  Inventory inventory = 4; // 引用嵌套消息
+}
+
+// 3. Oneof 字段
+// 示例：一个支付方式只能是信用卡、PayPal 或银行转账之一
+message PaymentMethod {
+  string method_id = 1;
+
+  oneof payment_details {
+    // 信用卡详情
+    CreditCardDetails credit_card = 2;
+    // PayPal 详情
+    PayPalDetails paypal = 3;
+    // 银行转账详情
+    BankTransferDetails bank_transfer = 4;
+  }
+}
+
+message CreditCardDetails {
+  string card_number = 1;
+  string expiry_date = 2;
+  string card_holder_name = 3;
+}
+
+message PayPalDetails {
+  string email = 1;
+  string transaction_id = 2;
+}
+
+message BankTransferDetails {
+  optional string bank_name = 1;
+  string account_number = 2;
+  string swift_code = 3;
+}
+
+// 4. Map 字段
+// 示例：存储商品的属性（键：属性名，值：属性值）
+message ItemAttributes {
+  int32 item_id = 1;
+  repeated string item_name = 2;
+  map<string, string> attributes = 3; // 键是字符串，值是字符串
+  map<string, BankTransferDetails> category_counts = 4 [optional = true]; // 键是字符串，值是整数
+}
+
+// 5. 消息字段保留（Reserved Fields and Names）
+// 目的：防止在未来版本中意外地重用字段号或字段名称，从而导致兼容性问题。
+message DeprecatedMessage {
+
+  int32 new_field = 1;
+  string current_data = 3;
+  // int32 old_field_name = 2; // 这是不允许的，因为 2 已被保留
+}
+
+
+// ====================================================================
+// 服务定义 (用于 RPC)
+// ====================================================================
+
+// 定义一个简单的用户服务
+service UserService {
+  option note = "UserService";
+  // 获取用户资料
+  rpc GetUserProfile (GetUserProfileRequest) returns (UserProfile) {
+    option note = "GetUserProfile";
+  };
+
+  // 创建新用户
+  rpc CreateUser (CreateUserRequest) returns (CreateUserResponse);
+
+  // 更新用户状态
+  rpc UpdateUserStatus (UpdateUserStatusRequest) returns (UpdateUserStatusResponse);
+}
+
+// 获取用户资料请求
+message GetUserProfileRequest {
+  int32 user_id = 1;
+}
+
+// 创建用户请求
+message CreateUserRequest {
+  string username = 1;
+  string email = 2;
+  repeated string phone_numbers = 3;
+}
+
+// 创建用户响应
+message CreateUserResponse {
+  bool success = 1;
+  string message = 2;
+  UserProfile created_user = 3; // 返回创建的用户资料
+}
+
+// 更新用户状态请求
+message UpdateUserStatusRequest {
+  int32 user_id = 1;
+  UserStatus new_status = 2;
+}
+
+// 更新用户状态响应
+message UpdateUserStatusResponse {
+  bool success = 1;
+  string message = 2;
+}

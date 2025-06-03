@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+import "../demo.proto";
+
+package test;
+
+
+enum OrphanEnum {
+    UNKNOWN = 0;
+    ONE = 1;
+    TWO = 2;
+}
+
+message OrphanMessage {
+    string my_string = 1;
+    demo.UserStatus my_bool = 2;
+    repeated OrphanEnum my_enum = 3;
+}
+
+message OrphanUnaryRequest {
+    int64 some_int64 = 1;
+}
+
+message OrphanStreamRequest {
+    string some_string = 1;
+}
+
+service OrphanService {
+    rpc DoUnary(OrphanUnaryRequest) returns (OrphanMessage) {}
+    rpc DoStream(OrphanStreamRequest) returns (stream OrphanMessage) {}
+}

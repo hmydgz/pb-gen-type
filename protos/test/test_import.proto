@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package test.import;
+
+// Result消息定义
+message Result {
+  string url = 1;
+  string title = 2;
+  repeated string snippets = 3; // 字符串数组类型
+}

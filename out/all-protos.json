@@ -1,0 +1,408 @@
+{
+  "nested": {
+    "demo": {
+      "nested": {
+        "UserStatus": {
+          "options": {
+            "note": "UserStatus"
+          },
+          "valuesOptions": {
+            "USER_STATUS_UNKNOWN": {
+              "note": "用户状态未知"
+            },
+            "USER_STATUS_ACTIVE": {
+              "note": "用户状态活跃"
+            },
+            "USER_STATUS_INACTIVE": {
+              "note": "用户状态不活跃"
+            },
+            "USER_STATUS_PENDING": {
+              "note": "用户状态待定"
+            }
+          },
+          "values": {
+            "USER_STATUS_UNKNOWN": 0,
+            "USER_STATUS_ACTIVE": 1,
+            "USER_STATUS_INACTIVE": 2,
+            "USER_STATUS_PENDING": 3
+          }
+        },
+        "UserProfile": {
+          "options": {
+            "note": "UserProfileuserId"
+          },
+          "fields": {
+            "userId": {
+              "type": "int32",
+              "id": 1
+            },
+            "username": {
+              "type": "string",
+              "id": 2
+            },
+            "email": {
+              "type": "string",
+              "id": 3,
+              "options": {
+                "deprecated": true,
+                "note": "电子邮件已废弃，请使用新的联系方式"
+              }
+            },
+            "isActive": {
+              "type": "bool",
+              "id": 4
+            },
+            "status": {
+              "type": "UserStatus",
+              "id": 5
+            },
+            "phoneNumbers": {
+              "rule": "repeated",
+              "type": "string",
+              "id": 6
+            },
+            "userRating": {
+              "type": "double",
+              "id": 7
+            },
+            "accountBalance": {
+              "type": "float",
+              "id": 8
+            },
+            "profilePicture": {
+              "type": "bytes",
+              "id": 9
+            },
+            "createdAt": {
+              "type": "int64",
+              "id": 10
+            }
+          }
+        },
+        "Inventory": {
+          "fields": {
+            "stockQuantity": {
+              "type": "int32",
+              "id": 1
+            },
+            "location": {
+              "type": "string",
+              "id": 2
+            }
+          }
+        },
+        "Product": {
+          "fields": {
+            "productId": {
+              "type": "int32",
+              "id": 1
+            },
+            "productName": {
+              "type": "string",
+              "id": 2
+            },
+            "price": {
+              "type": "double",
+              "id": 3
+            },
+            "inventory": {
+              "type": "Inventory",
+              "id": 4
+            }
+          }
+        },
+        "PaymentMethod": {
+          "oneofs": {
+            "paymentDetails": {
+              "oneof": [
+                "creditCard",
+                "paypal",
+                "bankTransfer"
+              ]
+            }
+          },
+          "fields": {
+            "methodId": {
+              "type": "string",
+              "id": 1
+            },
+            "creditCard": {
+              "type": "CreditCardDetails",
+              "id": 2
+            },
+            "paypal": {
+              "type": "PayPalDetails",
+              "id": 3
+            },
+            "bankTransfer": {
+              "type": "BankTransferDetails",
+              "id": 4
+            }
+          }
+        },
+        "CreditCardDetails": {
+          "fields": {
+            "cardNumber": {
+              "type": "string",
+              "id": 1
+            },
+            "expiryDate": {
+              "type": "string",
+              "id": 2
+            },
+            "cardHolderName": {
+              "type": "string",
+              "id": 3
+            }
+          }
+        },
+        "PayPalDetails": {
+          "fields": {
+            "email": {
+              "type": "string",
+              "id": 1
+            },
+            "transactionId": {
+              "type": "string",
+              "id": 2
+            }
+          }
+        },
+        "BankTransferDetails": {
+          "oneofs": {
+            "_bankName": {
+              "oneof": [
+                "bankName"
+              ]
+            }
+          },
+          "fields": {
+            "bankName": {
+              "type": "string",
+              "id": 1,
+              "options": {
+                "proto3_optional": true
+              }
+            },
+            "accountNumber": {
+              "type": "string",
+              "id": 2
+            },
+            "swiftCode": {
+              "type": "string",
+              "id": 3
+            }
+          }
+        },
+        "ItemAttributes": {
+          "fields": {
+            "itemId": {
+              "type": "int32",
+              "id": 1
+            },
+            "itemName": {
+              "rule": "repeated",
+              "type": "string",
+              "id": 2
+            },
+            "attributes": {
+              "keyType": "string",
+              "type": "string",
+              "id": 3
+            },
+            "categoryCounts": {
+              "keyType": "string",
+              "type": "BankTransferDetails",
+              "id": 4,
+              "options": {
+                "optional": true
+              }
+            }
+          }
+        },
+        "DeprecatedMessage": {
+          "fields": {
+            "newField": {
+              "type": "int32",
+              "id": 1
+            },
+            "currentData": {
+              "type": "string",
+              "id": 3
+            }
+          }
+        },
+        "UserService": {
+          "options": {
+            "note": "UserService"
+          },
+          "methods": {
+            "GetUserProfile": {
+              "requestType": "GetUserProfileRequest",
+              "responseType": "UserProfile",
+              "options": {
+                "note": "GetUserProfile"
+              },
+              "parsedOptions": [
+                {
+                  "note": "GetUserProfile"
+                }
+              ]
+            },
+            "CreateUser": {
+              "requestType": "CreateUserRequest",
+              "responseType": "CreateUserResponse"
+            },
+            "UpdateUserStatus": {
+              "requestType": "UpdateUserStatusRequest",
+              "responseType": "UpdateUserStatusResponse"
+            }
+          }
+        },
+        "GetUserProfileRequest": {
+          "fields": {
+            "userId": {
+              "type": "int32",
+              "id": 1
+            }
+          }
+        },
+        "CreateUserRequest": {
+          "fields": {
+            "username": {
+              "type": "string",
+              "id": 1
+            },
+            "email": {
+              "type": "string",
+              "id": 2
+            },
+            "phoneNumbers": {
+              "rule": "repeated",
+              "type": "string",
+              "id": 3
+            }
+          }
+        },
+        "CreateUserResponse": {
+          "fields": {
+            "success": {
+              "type": "bool",
+              "id": 1
+            },
+            "message": {
+              "type": "string",
+              "id": 2
+            },
+            "createdUser": {
+              "type": "UserProfile",
+              "id": 3
+            }
+          }
+        },
+        "UpdateUserStatusRequest": {
+          "fields": {
+            "userId": {
+              "type": "int32",
+              "id": 1
+            },
+            "newStatus": {
+              "type": "UserStatus",
+              "id": 2
+            }
+          }
+        },
+        "UpdateUserStatusResponse": {
+          "fields": {
+            "success": {
+              "type": "bool",
+              "id": 1
+            },
+            "message": {
+              "type": "string",
+              "id": 2
+            }
+          }
+        }
+      }
+    },
+    "test": {
+      "nested": {
+        "OrphanEnum": {
+          "values": {
+            "UNKNOWN": 0,
+            "ONE": 1,
+            "TWO": 2
+          }
+        },
+        "OrphanMessage": {
+          "fields": {
+            "myString": {
+              "type": "string",
+              "id": 1
+            },
+            "myBool": {
+              "type": "demo.UserStatus",
+              "id": 2
+            },
+            "myEnum": {
+              "rule": "repeated",
+              "type": "OrphanEnum",
+              "id": 3
+            }
+          }
+        },
+        "OrphanUnaryRequest": {
+          "fields": {
+            "someInt64": {
+              "type": "int64",
+              "id": 1
+            }
+          }
+        },
+        "OrphanStreamRequest": {
+          "fields": {
+            "someString": {
+              "type": "string",
+              "id": 1
+            }
+          }
+        },
+        "OrphanService": {
+          "methods": {
+            "DoUnary": {
+              "requestType": "OrphanUnaryRequest",
+              "responseType": "OrphanMessage"
+            },
+            "DoStream": {
+              "requestType": "OrphanStreamRequest",
+              "responseType": "OrphanMessage",
+              "responseStream": true
+            }
+          }
+        },
+        "import": {
+          "nested": {
+            "Result": {
+              "fields": {
+                "url": {
+                  "type": "string",
+                  "id": 1
+                },
+                "title": {
+                  "type": "string",
+                  "id": 2
+                },
+                "snippets": {
+                  "rule": "repeated",
+                  "type": "string",
+                  "id": 3
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
