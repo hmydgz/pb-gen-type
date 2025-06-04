@@ -176,7 +176,7 @@ const genEnum = genNest((_enum: IEnum & { valuesOptions?: Record<string, { 'note
     enumStr += `${indentationStr}  ${key} = ${_enum.values[key]},\n`
   })
 
-  enumStr += `${indentationStr}}\n`
+  enumStr += `${indentationStr}}\n\n`
   return enumStr
 })
 
@@ -193,7 +193,7 @@ const genService = genNest((service: IService, name: string): string => {
     serviceStr += `${indentationStr}  ${toPascalCase(key)}(params: ${service.methods[key].requestType}): Promise<${service.methods[key].responseType}>;\n`
   })
 
-  serviceStr += `${indentationStr}}\n`
+  serviceStr += `${indentationStr}}\n\n`
   return serviceStr
 })
 
@@ -210,7 +210,9 @@ const genNamespace = genNest((namespace: INamespace, name: string): string => {
     namespaceStr = handleNested(instance, namespaceStr)
   }
 
-  namespaceStr += `${indentationStr}}\n`
+  if (namespaceStr.endsWith('\n')) namespaceStr = namespaceStr.slice(0, -1)
+
+  namespaceStr += `${indentationStr}}\n\n`
   return namespaceStr
 })
 
@@ -222,10 +224,12 @@ const genInterface = genNest((_interface: IType, name: string): string => {
   interfaceStr += `${indentationStr}export interface ${toPascalCase(name)} {\n`
 
   Object.keys(_interface.fields).forEach((key) => {
+    const _note = _interface.fields[key].options?.['note'] || _interface.fields[key].options?.['note.str']
+    if (_note) interfaceStr += `${indentationStr}  /** ${_note} */\n`
     interfaceStr += `${indentationStr}  ${genField(_interface.fields[key], key)}`
   })
 
-  interfaceStr += `${indentationStr}}\n`
+  interfaceStr += `${indentationStr}}\n\n`
   return interfaceStr
 })
 
@@ -254,6 +258,7 @@ function genModules(key: string, module: INamespace): string {
   }
 
   indentationStr = ''
+  if (moduleStr.endsWith('\n')) moduleStr = moduleStr.slice(0, -1)
   moduleStr += '}\n'
   return moduleStr
 }
@@ -279,13 +284,12 @@ const handleNested = (instance: Record<string, any>, str: string) => {
     types.forEach(type => elementMap[type].push(key))
   })
 
-  Object.keys(elementMap).forEach((type, index) => {
-    elementMap[type as NodeType].forEach((key, index) => {
-      str += handleFnMap[type as NodeType](instance[key], key)
-      if (index < elementMap[type as NodeType].length - 1) str += '\n'
-    })
+  const elementMapKeys = Object.keys(elementMap)
 
-    if (index < Object.keys(elementMap).length - 1) str += '\n'
+  elementMapKeys.forEach((type) => {
+    elementMap[type as NodeType].forEach((key) => {
+      str += handleFnMap[type as NodeType](instance[key], key)
+    })
   })
 
   return str
@@ -326,14 +330,21 @@ export function genType(options: {
       fs.writeFileSync(outFile, JSON.stringify(allProtos, null, 2))
     }
 
+    let indexStr = ''
+
     // 生成TypeScript类型定义文件
     if (allProtos.nested) {
       Object.keys(allProtos.nested).forEach((key) => {
         const module = allProtos.nested![key]
         const outFile = path.join(outDir, `${key}.ts`)
         fs.writeFileSync(outFile, genModules(key, module))
+
+        indexStr += `export * from './${key}';\n`
       })
     }
+
+    const indexFile = path.join(outDir, 'index.ts')
+    fs.writeFileSync(indexFile, indexStr)
   } catch (error) {
     console.error('Error processing proto files:', error)
     process.exit(1)

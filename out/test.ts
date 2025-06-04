@@ -1,17 +1,7 @@
 import { Demo } from './demo';
+import { Test2 } from './test2';
 
 export namespace Test {
-  export namespace Import {
-
-    export interface Result {
-      url: string;
-      title: string;
-      snippets: string[];
-    }
-
-
-  }
-
   export interface OrphanMessage {
     myString: string;
     myBool: Demo.UserStatus;
@@ -19,7 +9,7 @@ export namespace Test {
   }
 
   export interface OrphanUnaryRequest {
-    someInt64: number;
+    someInt64: Test2.Result;
   }
 
   export interface OrphanStreamRequest {

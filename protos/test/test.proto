@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 import "../demo.proto";
+import "./test_import.proto";
 
 package test;
 
@@ -18,7 +19,7 @@ message OrphanMessage {
 }
 
 message OrphanUnaryRequest {
-    int64 some_int64 = 1;
+    test2.Result some_int64 = 1;
 }
 
 message OrphanStreamRequest {

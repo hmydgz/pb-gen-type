@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package test.import;
+package test2;
 
 // Result消息定义
 message Result {

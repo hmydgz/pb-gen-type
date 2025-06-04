@@ -1,9 +1,9 @@
 export namespace Demo {
-
   /** UserProfileuserId */
   export interface UserProfile {
     userId: number;
     username: string;
+    /** 电子邮件已废弃，请使用新的联系方式 */
     email: string;
     isActive: boolean;
     status: UserStatus;

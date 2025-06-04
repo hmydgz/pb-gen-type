@@ -355,7 +355,7 @@
         "OrphanUnaryRequest": {
           "fields": {
             "someInt64": {
-              "type": "int64",
+              "type": "test2.Result",
               "id": 1
             }
           }
@@ -380,25 +380,25 @@
               "responseStream": true
             }
           }
-        },
-        "import": {
-          "nested": {
-            "Result": {
-              "fields": {
-                "url": {
-                  "type": "string",
-                  "id": 1
-                },
-                "title": {
-                  "type": "string",
-                  "id": 2
-                },
-                "snippets": {
-                  "rule": "repeated",
-                  "type": "string",
-                  "id": 3
-                }
-              }
+        }
+      }
+    },
+    "test2": {
+      "nested": {
+        "Result": {
+          "fields": {
+            "url": {
+              "type": "string",
+              "id": 1
+            },
+            "title": {
+              "type": "string",
+              "id": 2
+            },
+            "snippets": {
+              "rule": "repeated",
+              "type": "string",
+              "id": 3
             }
           }
         }
