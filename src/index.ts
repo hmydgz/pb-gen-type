@@ -17,8 +17,11 @@ type ProtoNode = {
 
 type NodeType = 'namespace' | 'interface' | 'enum' | 'service';
 
-// 工具函数
+// 缩进
 let indentationStr = ''
+
+// 是否有rpc
+let hasRpc = false
 
 // GRPC 类型映射
 const grpcTypeMap: Record<string, string> = {
@@ -187,10 +190,14 @@ const genService = genNest((service: IService, name: string): string => {
   let serviceStr = ''
   serviceStr += `${indentationStr}export interface ${toPascalCase(name)} {\n`
 
-  Object.keys(service.methods).forEach((key) => {
+  const methods = Object.keys(service.methods)
+
+  if (methods.length) hasRpc = true
+
+  methods.forEach((key) => {
     const _note = service.methods[key].options?.['note']
     if (_note) serviceStr += `${indentationStr}  /** ${_note} */\n`
-    serviceStr += `${indentationStr}  ${toPascalCase(key)}(params: ${service.methods[key].requestType}): Promise<${service.methods[key].responseType}>;\n`
+    serviceStr += `${indentationStr}  ${toPascalCase(key)}(params: ${service.methods[key].requestType}, metadata: Metadata, call: ServerUnaryCall<${service.methods[key].requestType}, ${service.methods[key].responseType}>): Promise<${service.methods[key].responseType}>;\n`
   })
 
   serviceStr += `${indentationStr}}\n\n`
@@ -238,6 +245,7 @@ const genInterface = genNest((_interface: IType, name: string): string => {
  */
 function genModules(key: string, module: INamespace): string {
   rootName = key
+  hasRpc = false
   imports.clear()
 
   let moduleStr = ''
@@ -249,11 +257,14 @@ function genModules(key: string, module: INamespace): string {
 
   moduleStr = handleNested(instance, moduleStr)
 
-  if (imports.size) {
+  if (imports.size || hasRpc) {
     let importStr = ''
     imports.forEach((importName) => {
       importStr += `import { ${toPascalCase(importName)} } from './${importName}';\n`
     })
+    if (hasRpc) {
+      importStr += `import { Metadata, ServerUnaryCall } from '@grpc/grpc-js';\n`
+    }
     moduleStr = importStr + '\n' + moduleStr
   }
 

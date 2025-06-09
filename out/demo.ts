@@ -1,3 +1,5 @@
+import { Metadata, ServerUnaryCall } from '@grpc/grpc-js';
+
 export namespace Demo {
   /** UserProfileuserId */
   export interface UserProfile {
@@ -103,8 +105,8 @@ export namespace Demo {
   /** UserService */
   export interface UserService {
     /** GetUserProfile */
-    GetUserProfile(params: GetUserProfileRequest): Promise<UserProfile>;
-    CreateUser(params: CreateUserRequest): Promise<CreateUserResponse>;
-    UpdateUserStatus(params: UpdateUserStatusRequest): Promise<UpdateUserStatusResponse>;
+    GetUserProfile(params: GetUserProfileRequest, metadata: Metadata, call: ServerUnaryCall<GetUserProfileRequest, UserProfile>): Promise<UserProfile>;
+    CreateUser(params: CreateUserRequest, metadata: Metadata, call: ServerUnaryCall<CreateUserRequest, CreateUserResponse>): Promise<CreateUserResponse>;
+    UpdateUserStatus(params: UpdateUserStatusRequest, metadata: Metadata, call: ServerUnaryCall<UpdateUserStatusRequest, UpdateUserStatusResponse>): Promise<UpdateUserStatusResponse>;
   }
 }
