@@ -1,6 +1,6 @@
 import { Demo } from './demo';
 import { Test2 } from './test2';
-import { Metadata, ServerUnaryCall } from '@grpc/grpc-js';
+import { Metadata } from '@grpc/grpc-js';
 
 export namespace Test {
   export interface OrphanMessage {
@@ -24,7 +24,7 @@ export namespace Test {
   }
 
   export interface OrphanService {
-    DoUnary(params: OrphanUnaryRequest, metadata?: Metadata, call?: ServerUnaryCall<OrphanUnaryRequest, OrphanMessage>): Promise<OrphanMessage>;
-    DoStream(params: OrphanStreamRequest, metadata?: Metadata, call?: ServerUnaryCall<OrphanStreamRequest, OrphanMessage>): Promise<OrphanMessage>;
+    DoUnary(params: OrphanUnaryRequest, metadata?: Metadata): Promise<OrphanMessage>;
+    DoStream(params: OrphanStreamRequest, metadata?: Metadata): Promise<OrphanMessage>;
   }
 }
