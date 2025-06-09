@@ -24,7 +24,7 @@ export namespace Test {
   }
 
   export interface OrphanService {
-    DoUnary(params: OrphanUnaryRequest, metadata: Metadata, call: ServerUnaryCall<OrphanUnaryRequest, OrphanMessage>): Promise<OrphanMessage>;
-    DoStream(params: OrphanStreamRequest, metadata: Metadata, call: ServerUnaryCall<OrphanStreamRequest, OrphanMessage>): Promise<OrphanMessage>;
+    DoUnary(params: OrphanUnaryRequest, metadata?: Metadata, call?: ServerUnaryCall<OrphanUnaryRequest, OrphanMessage>): Promise<OrphanMessage>;
+    DoStream(params: OrphanStreamRequest, metadata?: Metadata, call?: ServerUnaryCall<OrphanStreamRequest, OrphanMessage>): Promise<OrphanMessage>;
   }
 }

@@ -105,8 +105,8 @@ export namespace Demo {
   /** UserService */
   export interface UserService {
     /** GetUserProfile */
-    GetUserProfile(params: GetUserProfileRequest, metadata: Metadata, call: ServerUnaryCall<GetUserProfileRequest, UserProfile>): Promise<UserProfile>;
-    CreateUser(params: CreateUserRequest, metadata: Metadata, call: ServerUnaryCall<CreateUserRequest, CreateUserResponse>): Promise<CreateUserResponse>;
-    UpdateUserStatus(params: UpdateUserStatusRequest, metadata: Metadata, call: ServerUnaryCall<UpdateUserStatusRequest, UpdateUserStatusResponse>): Promise<UpdateUserStatusResponse>;
+    GetUserProfile(params: GetUserProfileRequest, metadata?: Metadata, call?: ServerUnaryCall<GetUserProfileRequest, UserProfile>): Promise<UserProfile>;
+    CreateUser(params: CreateUserRequest, metadata?: Metadata, call?: ServerUnaryCall<CreateUserRequest, CreateUserResponse>): Promise<CreateUserResponse>;
+    UpdateUserStatus(params: UpdateUserStatusRequest, metadata?: Metadata, call?: ServerUnaryCall<UpdateUserStatusRequest, UpdateUserStatusResponse>): Promise<UpdateUserStatusResponse>;
   }
 }

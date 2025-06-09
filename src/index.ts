@@ -197,7 +197,7 @@ const genService = genNest((service: IService, name: string): string => {
   methods.forEach((key) => {
     const _note = service.methods[key].options?.['note']
     if (_note) serviceStr += `${indentationStr}  /** ${_note} */\n`
-    serviceStr += `${indentationStr}  ${toPascalCase(key)}(params: ${service.methods[key].requestType}, metadata: Metadata, call: ServerUnaryCall<${service.methods[key].requestType}, ${service.methods[key].responseType}>): Promise<${service.methods[key].responseType}>;\n`
+    serviceStr += `${indentationStr}  ${toPascalCase(key)}(params: ${service.methods[key].requestType}, metadata?: Metadata): Promise<${service.methods[key].responseType}>;\n`
   })
 
   serviceStr += `${indentationStr}}\n\n`
@@ -263,7 +263,7 @@ function genModules(key: string, module: INamespace): string {
       importStr += `import { ${toPascalCase(importName)} } from './${importName}';\n`
     })
     if (hasRpc) {
-      importStr += `import { Metadata, ServerUnaryCall } from '@grpc/grpc-js';\n`
+      importStr += `import { Metadata } from '@grpc/grpc-js';\n`
     }
     moduleStr = importStr + '\n' + moduleStr
   }
