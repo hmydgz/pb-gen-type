@@ -1,6 +1,6 @@
 {
   "name": "@hmydgz/pb-gen-type",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "",
   "type": "commonjs",
   "main": "lib/index.js",
