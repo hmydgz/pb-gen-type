@@ -1,4 +1,5 @@
 import { Metadata } from '@grpc/grpc-js';
+import { Observable } from 'rxjs';
 
 export namespace Demo {
   /** UserProfileuserId */
@@ -108,5 +109,12 @@ export namespace Demo {
     GetUserProfile(params: GetUserProfileRequest, metadata?: Metadata): Promise<UserProfile>;
     CreateUser(params: CreateUserRequest, metadata?: Metadata): Promise<CreateUserResponse>;
     UpdateUserStatus(params: UpdateUserStatusRequest, metadata?: Metadata): Promise<UpdateUserStatusResponse>;
+  }
+
+  export interface UserServiceClient {
+    /** GetUserProfile */
+    GetUserProfile(params: GetUserProfileRequest, metadata?: Metadata): Observable<UserProfile>;
+    CreateUser(params: CreateUserRequest, metadata?: Metadata): Observable<CreateUserResponse>;
+    UpdateUserStatus(params: UpdateUserStatusRequest, metadata?: Metadata): Observable<UpdateUserStatusResponse>;
   }
 }

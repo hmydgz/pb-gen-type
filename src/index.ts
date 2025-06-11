@@ -194,13 +194,23 @@ const genService = genNest((service: IService, name: string): string => {
 
   if (methods.length) hasRpc = true
 
+  // 生成服务端类型定义
   methods.forEach((key) => {
     const _note = service.methods[key].options?.['note']
     if (_note) serviceStr += `${indentationStr}  /** ${_note} */\n`
     serviceStr += `${indentationStr}  ${toPascalCase(key)}(params: ${service.methods[key].requestType}, metadata?: Metadata): Promise<${service.methods[key].responseType}>;\n`
   })
-
   serviceStr += `${indentationStr}}\n\n`
+
+  // 生成客户端类型定义
+  serviceStr += `${indentationStr}export interface ${toPascalCase(name)}Client {\n`
+  methods.forEach((key) => {
+    const _note = service.methods[key].options?.['note']
+    if (_note) serviceStr += `${indentationStr}  /** ${_note} */\n`
+    serviceStr += `${indentationStr}  ${toPascalCase(key)}(params: ${service.methods[key].requestType}, metadata?: Metadata): Observable<${service.methods[key].responseType}>;\n`
+  })
+  serviceStr += `${indentationStr}}\n\n`
+
   return serviceStr
 })
 
@@ -259,12 +269,13 @@ function genModules(key: string, module: INamespace): string {
 
   if (imports.size || hasRpc) {
     let importStr = ''
+    if (hasRpc) {
+      importStr += `import { Metadata } from '@grpc/grpc-js';\n`
+      importStr += `import { Observable } from 'rxjs';\n`
+    }
     imports.forEach((importName) => {
       importStr += `import { ${toPascalCase(importName)} } from './${importName}';\n`
     })
-    if (hasRpc) {
-      importStr += `import { Metadata } from '@grpc/grpc-js';\n`
-    }
     moduleStr = importStr + '\n' + moduleStr
   }
 

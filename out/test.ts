@@ -1,6 +1,7 @@
+import { Metadata } from '@grpc/grpc-js';
+import { Observable } from 'rxjs';
 import { Demo } from './demo';
 import { Test2 } from './test2';
-import { Metadata } from '@grpc/grpc-js';
 
 export namespace Test {
   export interface OrphanMessage {
@@ -26,5 +27,10 @@ export namespace Test {
   export interface OrphanService {
     DoUnary(params: OrphanUnaryRequest, metadata?: Metadata): Promise<OrphanMessage>;
     DoStream(params: OrphanStreamRequest, metadata?: Metadata): Promise<OrphanMessage>;
+  }
+
+  export interface OrphanServiceClient {
+    DoUnary(params: OrphanUnaryRequest, metadata?: Metadata): Observable<OrphanMessage>;
+    DoStream(params: OrphanStreamRequest, metadata?: Metadata): Observable<OrphanMessage>;
   }
 }
