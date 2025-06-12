@@ -1,27 +1,16 @@
 import { IEnum, IField, INamespace, IService, IType, loadSync } from 'protobufjs'
 import * as fs from 'fs'
 import * as path from 'path'
-
-// 类型定义
-type ProtoNode = {
-  nested?: Record<string, any>;
-  fields?: Record<string, IField>;
-  values?: Record<string, number>;
-  methods?: Record<string, any>;
-  options?: Record<string, any>;
-  keyType?: string;
-  type?: string;
-  rule?: string;
-  valuesOptions?: Record<string, { 'note.str'?: string; note?: string }>;
-}
-
-type NodeType = 'namespace' | 'interface' | 'enum' | 'service';
+import { deepMerge, ensureDir, findAllProtoFiles, getNodeType, namePathToUpperCase, toPascalCase } from './utils';
+import { NodeType } from './type';
 
 // 缩进
 let indentationStr = ''
 
 // 是否有rpc
 let hasRpc = false
+
+const serviceMap: Record<string, string[]> = {}
 
 // GRPC 类型映射
 const grpcTypeMap: Record<string, string> = {
@@ -43,60 +32,6 @@ const grpcTypeMap: Record<string, string> = {
 }
 
 /**
- * 深合并对象
- */
-function deepMerge(target: any, source: any): any {
-  if (source === null || typeof source !== 'object') {
-    return source
-  }
-
-  if (Array.isArray(source)) {
-    return source
-  }
-
-  const result = { ...target }
-  for (const key in source) {
-    if (source.hasOwnProperty(key)) {
-      if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
-        result[key] = deepMerge(result[key] || {}, source[key])
-      } else {
-        result[key] = source[key]
-      }
-    }
-  }
-  return result
-}
-
-/**
- * 确保目录存在
- */
-function ensureDir(dir: string): void {
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true })
-  }
-}
-
-/**
- * 将字符串转换为大驼峰格式
- */
-function toPascalCase(str: string): string {
-  return str
-    .split('_')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join('')
-}
-
-/**
- * 将命名路径转换为大写
- */
-function namePathToUpperCase(str: string): string {
-  return str
-    .split('.')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join('.')
-}
-
-/**
  * 生成嵌套结构
  */
 function genNest<T extends (...rest: any[]) => string>(fn: T) {
@@ -109,39 +44,6 @@ function genNest<T extends (...rest: any[]) => string>(fn: T) {
     indentationStr = currentIndent
     return result
   }
-}
-
-/**
- * 遍历指定路径下所有proto文件
- */
-function findAllProtoFiles(dir: string): string[] {
-  const protoFiles: string[] = []
-  const files = fs.readdirSync(dir)
-
-  for (const file of files) {
-    const fullPath = path.join(dir, file)
-    const stat = fs.statSync(fullPath)
-
-    if (stat.isDirectory()) {
-      protoFiles.push(...findAllProtoFiles(fullPath))
-    } else if (file.endsWith('.proto')) {
-      protoFiles.push(fullPath)
-    }
-  }
-
-  return protoFiles
-}
-
-/**
- * 获取节点类型
- */
-function getNodeType(node: ProtoNode): NodeType[] {
-  const types: NodeType[] = []
-  if (node.nested) types.push('namespace')
-  if (node.fields) types.push('interface')
-  if (node.values) types.push('enum')
-  if (node.methods) types.push('service')
-  return types
 }
 
 let rootName = ''
@@ -187,6 +89,9 @@ const genEnum = genNest((_enum: IEnum & { valuesOptions?: Record<string, { 'note
  * 生成服务定义
  */
 const genService = genNest((service: IService, name: string): string => {
+  if (!serviceMap[rootName]) serviceMap[rootName] = []
+  serviceMap[rootName].push(name)
+
   let serviceStr = ''
   serviceStr += `${indentationStr}export interface ${toPascalCase(name)} {\n`
 
@@ -317,6 +222,42 @@ const handleNested = (instance: Record<string, any>, str: string) => {
   return str
 }
 
+function genIndex(allProtos: INamespace) {
+  let indexStr = ''
+  if (allProtos.nested) {
+    Object.keys(allProtos.nested).forEach((key) => {
+      indexStr += `export * from './${key}';\n`
+    })
+  }
+
+  const hasServicePackages = Object.keys(serviceMap)
+
+  if (hasServicePackages.length) {
+    hasServicePackages.forEach((key) => {
+      indexStr += `import { ${namePathToUpperCase(key)} } from './${key}';\n`
+    })
+
+    indexStr += '\nexport enum PackageName {\n'
+    indexStr += `${hasServicePackages.map(key => `  ${namePathToUpperCase(key)} = '${key}',`).join('\n')}\n`
+    indexStr += '}\n\n'
+
+    hasServicePackages.forEach((key) => {
+      indexStr += `export enum ${namePathToUpperCase(key)}ServiceName {\n`
+      indexStr += `${serviceMap[key].map(name => `  ${toPascalCase(name)} = '${name}',`).join('\n')}\n`
+      indexStr += `${indentationStr}}\n\n`
+    })
+
+    indexStr += `export type PackageServiceMap = {
+${hasServicePackages.map(key => `  [PackageName.${namePathToUpperCase(key)}]: {
+${serviceMap[key].map(name => `    [${namePathToUpperCase(key)}ServiceName.${toPascalCase(name)}]: ${namePathToUpperCase(key)}.${toPascalCase(name)}Client,`).join('\n')}
+  },`).join('\n')}
+}
+`
+  }
+
+  return indexStr
+}
+
 
 // 主程序
 export function genType(options: {
@@ -352,21 +293,18 @@ export function genType(options: {
       fs.writeFileSync(outFile, JSON.stringify(allProtos, null, 2))
     }
 
-    let indexStr = ''
-
     // 生成TypeScript类型定义文件
     if (allProtos.nested) {
       Object.keys(allProtos.nested).forEach((key) => {
         const module = allProtos.nested![key]
         const outFile = path.join(outDir, `${key}.ts`)
         fs.writeFileSync(outFile, genModules(key, module))
-
-        indexStr += `export * from './${key}';\n`
       })
     }
 
     const indexFile = path.join(outDir, 'index.ts')
-    fs.writeFileSync(indexFile, indexStr)
+    fs.writeFileSync(indexFile, genIndex(allProtos))
+
   } catch (error) {
     console.error('Error processing proto files:', error)
     process.exit(1)
